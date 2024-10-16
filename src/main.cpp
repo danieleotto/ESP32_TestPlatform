@@ -1,18 +1,67 @@
 #include <Arduino.h>
+#include <WiFi.h>
 
-// put function declarations here:
-int myFunction(int, int);
+// Global variables
+const char* SSID = "";
+const char* PASS = "";
+byte mac[6];
 
+// Put function declarations here:
+void initWiFi();
+void printMacAddress();
+
+
+// MAIN PROGRAM
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  // Setup code at board boot
+  Serial.begin(115200);
+  while(!Serial){
+    ;
+  }
+  delay(1000);
+  Serial.println("Serial Connected!");
+  
+  initWiFi();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // Put your main code here, to run repeatedly:
+
 }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+
+// Functions
+void initWiFi(){
+  Serial.print("\nConnecting to: ");
+  Serial.println(SSID);
+
+  WiFi.begin(SSID,PASS);
+
+  while(WiFi.status() != WL_CONNECTED){
+    delay(200);
+    Serial.print("-");
+  }
+
+  Serial.print("Connected to: ");
+  Serial.println(SSID);
+  Serial.print("Local IP: ");
+  Serial.println(WiFi.localIP());
+  printMacAddress();
+}
+
+
+void printMacAddress(){
+  WiFi.macAddress(mac);
+  Serial.print("MAC Address: ");
+  Serial.print(mac[5],HEX);
+  Serial.print(":");
+  Serial.print(mac[4],HEX);
+  Serial.print(":");
+  Serial.print(mac[3],HEX);
+  Serial.print(":");
+  Serial.print(mac[2],HEX);
+  Serial.print(":");
+  Serial.print(mac[1],HEX);
+  Serial.print(":");
+  Serial.println(mac[0],HEX);
 }
