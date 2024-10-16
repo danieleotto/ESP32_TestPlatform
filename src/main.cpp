@@ -10,6 +10,7 @@ byte mac[6];
 const char* ntpServer = "pool.ntp.org";
 unsigned long long epochTime;
 JsonDocument doc;
+JsonDocument ddoc;
 long int counter;
 
 // Put function declarations here:
@@ -17,7 +18,8 @@ void initWiFi();
 void printMacAddress();
 void checkWifiConnection();
 unsigned long long getEpochTime();
-void createJson();
+void writeJson();
+void readJson();
 
 // MAIN PROGRAM
 void setup() {
@@ -48,7 +50,8 @@ void loop() {
   counter++;
   delay(5000);
 
-  createJson();
+  writeJson();
+  readJson();
 }
 
 
@@ -109,7 +112,7 @@ unsigned long long getEpochTime(){
 }
 
 
-void createJson(){
+void writeJson(){
   doc.clear();
 
   doc["EpochTime"] = epochTime;
@@ -117,4 +120,18 @@ void createJson(){
   doc["Counter"] = counter;
 
   serializeJsonPretty(doc, Serial);
+}
+
+
+void readJson(){
+  char deserializedJson[512];
+
+  DeserializationError error = deserializeJson(ddoc,deserializedJson);
+  if(error){
+    Serial.print("deserializeJson() failed: ");
+    Serial.println(error.f_str());
+    return;
+  }
+
+  Serial.println(deserializedJson);
 }
