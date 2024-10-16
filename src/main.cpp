@@ -1,14 +1,19 @@
 #include <Arduino.h>
 #include <WiFi.h>
+#include "time.h"
 
 // Global variables
 const char* SSID = "";
 const char* PASS = "";
 byte mac[6];
+const char* ntpServer = "pool.ntp.org";
+unsigned long long epochTime;
 
 // Put function declarations here:
 void initWiFi();
 void printMacAddress();
+void checkWifiConnection();
+unsigned long long getEpochTime();
 
 
 // MAIN PROGRAM
@@ -22,11 +27,17 @@ void setup() {
   Serial.println("Serial Connected!");
   
   initWiFi();
+  configTime(0,0,ntpServer);
 }
 
 void loop() {
   // Put your main code here, to run repeatedly:
+  checkWifiConnection();
 
+  epochTime = getEpochTime();
+  Serial.print("Epoch Time: ");
+  Serial.println(epochTime);
+  delay(5000);
 }
 
 
@@ -64,4 +75,24 @@ void printMacAddress(){
   Serial.print(mac[1],HEX);
   Serial.print(":");
   Serial.println(mac[0],HEX);
+}
+
+
+void checkWifiConnection(){
+  if(WiFi.status()!=WL_CONNECTED){
+    initWiFi();
+  }
+  Serial.println("Reconnected.");
+}
+
+
+unsigned long long getEpochTime(){
+  time_t now;
+  struct tm timeinfo;
+  if(!getLocalTime(&timeinfo)){
+    Serial.print("Failed to obtain time.");
+    return 0;
+  }
+  time(&now);
+  return now;
 }
