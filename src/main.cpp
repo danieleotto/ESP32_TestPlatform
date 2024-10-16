@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include "time.h"
+#include <ArduinoJson.h>
 
 // Global variables
 const char* SSID = "";
@@ -8,13 +9,15 @@ const char* PASS = "";
 byte mac[6];
 const char* ntpServer = "pool.ntp.org";
 unsigned long long epochTime;
+JsonDocument doc;
+long int counter;
 
 // Put function declarations here:
 void initWiFi();
 void printMacAddress();
 void checkWifiConnection();
 unsigned long long getEpochTime();
-
+void createJson();
 
 // MAIN PROGRAM
 void setup() {
@@ -25,6 +28,8 @@ void setup() {
   }
   delay(1000);
   Serial.println("Serial Connected!");
+
+  counter = 0;
   
   initWiFi();
   configTime(0,0,ntpServer);
@@ -37,7 +42,13 @@ void loop() {
   epochTime = getEpochTime();
   Serial.print("Epoch Time: ");
   Serial.println(epochTime);
+  if(counter>32000){
+    counter = 0;
+  }
+  counter++;
   delay(5000);
+
+  createJson();
 }
 
 
@@ -95,4 +106,15 @@ unsigned long long getEpochTime(){
   }
   time(&now);
   return now;
+}
+
+
+void createJson(){
+  doc.clear();
+
+  doc["EpochTime"] = epochTime;
+  doc["TestCode"] = "12345";
+  doc["Counter"] = counter;
+
+  serializeJsonPretty(doc, Serial);
 }
