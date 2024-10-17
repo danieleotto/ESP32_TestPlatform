@@ -2,16 +2,21 @@
 #include <WiFi.h>
 #include "time.h"
 #include <ArduinoJson.h>
+#include "esp32secure.h"
+
+#define timeInterval 5000
 
 // Global variables
-const char* SSID = "";
-const char* PASS = "";
+const char* SSID = SEC_SSID;
+const char* PASS = SEC_PASS;
 byte mac[6];
 const char* ntpServer = "pool.ntp.org";
 unsigned long long epochTime;
 JsonDocument doc;
 JsonDocument ddoc;
 long int counter;
+char container[256];
+unsigned long stime;
 
 // Put function declarations here:
 void initWiFi();
@@ -35,23 +40,26 @@ void setup() {
   
   initWiFi();
   configTime(0,0,ntpServer);
+  stime = millis();
 }
 
 void loop() {
   // Put your main code here, to run repeatedly:
-  checkWifiConnection();
 
-  epochTime = getEpochTime();
-  Serial.print("Epoch Time: ");
-  Serial.println(epochTime);
-  if(counter>32000){
-    counter = 0;
+  if ((millis() - stime) > timeInterval){
+    checkWifiConnection();
+    epochTime = getEpochTime();
+    Serial.print("\nEpoch Time: ");
+    Serial.println(epochTime);
+    if(counter>20){
+      counter = 0;
+    }
+    counter++;
+
+    writeJson();
+    readJson();
+    stime = millis();
   }
-  counter++;
-  delay(5000);
-
-  writeJson();
-  readJson();
 }
 
 
@@ -114,24 +122,39 @@ unsigned long long getEpochTime(){
 
 void writeJson(){
   doc.clear();
+  for(int i=0;i<256;i++){
+    container[i] = ' ';
+  }
 
   doc["EpochTime"] = epochTime;
   doc["TestCode"] = "12345";
   doc["Counter"] = counter;
 
   serializeJsonPretty(doc, Serial);
+  serializeJson(doc,container);
+  Serial.println("\n---END---");
 }
 
 
 void readJson(){
-  char deserializedJson[512];
 
-  DeserializationError error = deserializeJson(ddoc,deserializedJson);
+  DeserializationError error = deserializeJson(ddoc,container);
   if(error){
     Serial.print("deserializeJson() failed: ");
     Serial.println(error.f_str());
     return;
   }
 
-  Serial.println(deserializedJson);
+  unsigned long long eT = ddoc["EpochTime"];
+  int n = ddoc["Counter"];
+  const char* tc = ddoc["TestCode"];
+
+
+
+  Serial.print("DES Epoch: ");
+  Serial.println(eT);
+  Serial.print("DES TestCode: ");
+  Serial.println(tc);
+  Serial.print("DES Counter: ");
+  Serial.println(n);
 }
