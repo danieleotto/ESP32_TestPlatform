@@ -104,7 +104,7 @@ void checkWifiConnection(){
   if(WiFi.status()!=WL_CONNECTED){
     initWiFi();
   }
-  Serial.println("Reconnected.");
+  //Serial.println("Reconnected.");
 }
 
 
