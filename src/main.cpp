@@ -1,15 +1,14 @@
 #include <Arduino.h>
-#include <WiFi.h>
 #include "time.h"
 #include <ArduinoJson.h>
 #include "esp32secure.h"
+#include "testWifi.h"
 
 #define timeInterval 5000
 
 // Global variables
 const char* SSID = SEC_SSID;
 const char* PASS = SEC_PASS;
-byte mac[6];
 const char* ntpServer = "pool.ntp.org";
 unsigned long long epochTime;
 JsonDocument doc;
@@ -18,10 +17,10 @@ long int counter;
 char container[256];
 unsigned long stime;
 
+// Constructor
+WifiConnection wifi(SEC_SSID,SEC_PASS);
+
 // Put function declarations here:
-void initWiFi();
-void printMacAddress();
-void checkWifiConnection();
 unsigned long long getEpochTime();
 void writeJson();
 void readJson();
@@ -38,7 +37,7 @@ void setup() {
 
   counter = 0;
   
-  initWiFi();
+  wifi.connect();
   configTime(0,0,ntpServer);
   stime = millis();
 }
@@ -47,7 +46,7 @@ void loop() {
   // Put your main code here, to run repeatedly:
 
   if ((millis() - stime) > timeInterval){
-    checkWifiConnection();
+    wifi.checkConnection();
     epochTime = getEpochTime();
     Serial.print("\nEpoch Time: ");
     Serial.println(epochTime);
@@ -64,48 +63,7 @@ void loop() {
 
 
 // Functions
-void initWiFi(){
-  Serial.print("\nConnecting to: ");
-  Serial.println(SSID);
 
-  WiFi.begin(SSID,PASS);
-
-  while(WiFi.status() != WL_CONNECTED){
-    delay(200);
-    Serial.print("-");
-  }
-
-  Serial.print("Connected to: ");
-  Serial.println(SSID);
-  Serial.print("Local IP: ");
-  Serial.println(WiFi.localIP());
-  printMacAddress();
-}
-
-
-void printMacAddress(){
-  WiFi.macAddress(mac);
-  Serial.print("MAC Address: ");
-  Serial.print(mac[5],HEX);
-  Serial.print(":");
-  Serial.print(mac[4],HEX);
-  Serial.print(":");
-  Serial.print(mac[3],HEX);
-  Serial.print(":");
-  Serial.print(mac[2],HEX);
-  Serial.print(":");
-  Serial.print(mac[1],HEX);
-  Serial.print(":");
-  Serial.println(mac[0],HEX);
-}
-
-
-void checkWifiConnection(){
-  if(WiFi.status()!=WL_CONNECTED){
-    initWiFi();
-  }
-  //Serial.println("Reconnected.");
-}
 
 
 unsigned long long getEpochTime(){
