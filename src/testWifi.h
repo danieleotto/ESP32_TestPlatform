@@ -5,7 +5,7 @@
 #ifndef testWifi_h
 #define testWifi_h
 
-#include "Arduino.h"
+#include <Arduino.h>
 
 class WifiConnection {
     public:
@@ -13,6 +13,7 @@ class WifiConnection {
         void connect();
         void checkConnection();
         void printMacAddress();
+        void getMacAddress(byte* macptr);
     private:
         const char* _SSID;
         const char* _PASS;

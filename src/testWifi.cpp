@@ -46,3 +46,7 @@ void WifiConnection::printMacAddress(){
   Serial.print(":");
   Serial.println(mac[0],HEX);
 }
+
+void WifiConnection::getMacAddress(byte* macptr){
+    WiFi.macAddress(macptr);
+}

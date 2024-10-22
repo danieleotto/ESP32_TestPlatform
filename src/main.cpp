@@ -13,6 +13,7 @@ const char* ntpServer = "pool.ntp.org";
 unsigned long long epochTime;
 JsonDocument doc;
 JsonDocument ddoc;
+byte mac[6];
 long int counter;
 char container[256];
 unsigned long stime;
@@ -47,6 +48,16 @@ void loop() {
 
   if ((millis() - stime) > timeInterval){
     wifi.checkConnection();
+    wifi.getMacAddress(mac);
+    for (int i=5; i>=0; i++){
+      Serial.print("Mac address da Funzione: ");
+      Serial.print(mac[i],HEX);
+      if(i!=0){
+        Serial.print(":");
+      } else {
+        Serial.println("...");
+      }
+    }
     epochTime = getEpochTime();
     Serial.print("\nEpoch Time: ");
     Serial.println(epochTime);
